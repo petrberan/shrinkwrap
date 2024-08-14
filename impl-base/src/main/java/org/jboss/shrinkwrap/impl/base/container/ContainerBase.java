@@ -815,9 +815,9 @@ public abstract class ContainerBase<T extends Archive<T>> extends AssignableBase
         String adjustedPath = path;
         final int indexOfExclamationPoint = path.indexOf('!' + File.separator);
         if(indexOfExclamationPoint!=-1){
-            adjustedPath = path.substring(indexOfExclamationPoint + 2, path.length());
+            adjustedPath = path.substring(indexOfExclamationPoint + 2);
         }
-
+        adjustedPath = adjustedPath.replace(File.separator, "/");
         for (final ClassLoader classLoader : classLoaders) {
             final InputStream in = classLoader.getResourceAsStream(adjustedPath);
             if (in != null) {
