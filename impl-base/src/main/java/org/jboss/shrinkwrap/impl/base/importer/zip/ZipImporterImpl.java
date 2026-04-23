@@ -16,7 +16,6 @@
  */
 package org.jboss.shrinkwrap.impl.base.importer.zip;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,13 +29,12 @@ import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.Filter;
 import org.jboss.shrinkwrap.api.Filters;
-import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.importer.ArchiveImportException;
 import org.jboss.shrinkwrap.api.importer.ZipImporter;
 import org.jboss.shrinkwrap.impl.base.AssignableBase;
 import org.jboss.shrinkwrap.impl.base.Validate;
+import org.jboss.shrinkwrap.impl.base.asset.StreamBufferedAsset;
 import org.jboss.shrinkwrap.impl.base.asset.ZipFileEntryAsset;
-import org.jboss.shrinkwrap.impl.base.io.IOUtil;
 import org.jboss.shrinkwrap.impl.base.path.BasicPath;
 
 /**
@@ -126,9 +124,9 @@ public class ZipImporterImpl extends AssignableBase<Archive<?>> implements ZipIm
                     continue;
                 }
 
-                final ByteArrayOutputStream output = new ByteArrayOutputStream(8192);
-                IOUtil.copy(zipStream, output);
-                archive.add(new ByteArrayAsset(output.toByteArray()), entryName);
+                // Use StreamBufferedAsset to prevent OOM with large entries
+                // Small entries stay in memory, large entries are buffered to disk
+                archive.add(new StreamBufferedAsset(zipStream), entryName);
                 zipStream.closeEntry();
             }
         } catch (IOException e) {
